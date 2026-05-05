@@ -75,6 +75,7 @@ export const translations = {
   completed: { en: "Completed", kn: "ಪೂರ್ಣಗೊಂಡಿದೆ" },
   paid: { en: "Paid", kn: "ಪಾವತಿಸಲಾಗಿದೆ" },
   payment: { en: "Payment", kn: "ಪಾವತಿ" },
+  paymentStatus: { en: "Payment Status", kn: "ಪಾವತಿ ಸ್ಥಿತಿ" },
   notes: { en: "Notes", kn: "ಟಿಪ್ಪಣಿಗಳು" },
   sendBookingReminder: { en: "Send Booking Reminder via WhatsApp", kn: "WhatsApp ಮೂಲಕ ಬುಕಿಂಗ್ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಿ" },
   sendPaymentReminder: { en: "Send Payment Reminder via WhatsApp", kn: "WhatsApp ಮೂಲಕ ಪಾವತಿ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಿ" },

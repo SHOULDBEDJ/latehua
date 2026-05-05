@@ -51,11 +51,17 @@ export function BookingDetail({ booking }: { booking: Booking }) {
           <p className="text-xs text-muted-foreground">{t("bookingId")}</p>
           <p className="font-mono text-lg font-bold">{booking.id}</p>
         </div>
-        <div className="flex gap-2">
-          <Badge variant="secondary">{booking.status}</Badge>
-          <Badge variant={booking.paymentMode === "Paid" ? "default" : "destructive"}>
-            {booking.paymentMode}
-          </Badge>
+        <div className="flex gap-3">
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("bookingStatus")}</span>
+            <Badge variant="secondary">{booking.status}</Badge>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("paymentStatus")}</span>
+            <Badge variant={booking.paymentMode === "Paid" ? "default" : "destructive"}>
+              {booking.paymentMode}
+            </Badge>
+          </div>
         </div>
       </div>
 
