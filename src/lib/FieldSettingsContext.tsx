@@ -34,6 +34,7 @@ export const BOOKING_FIELDS: { key: BookingField; label: string }[] = [
 interface FieldSettings {
   fields: Record<BookingField, boolean>;
   setField: (k: BookingField, v: boolean) => void;
+  setFields: (f: Record<BookingField, boolean>) => void;
   showCalendarMarks: boolean;
   setShowCalendarMarks: (v: boolean) => void;
   resetFields: () => void;
@@ -50,7 +51,7 @@ const DEFAULT_FIELDS = BOOKING_FIELDS.reduce((acc, f) => {
 const Ctx = createContext<FieldSettings | null>(null);
 
 export function FieldSettingsProvider({ children }: { children: ReactNode }) {
-  const [fields, setFields] = useState<Record<BookingField, boolean>>(() => {
+  const [fields, setFieldsState] = useState<Record<BookingField, boolean>>(() => {
     try {
       const raw = localStorage.getItem(KEY_FIELDS);
       if (raw) return { ...DEFAULT_FIELDS, ...JSON.parse(raw) };
@@ -71,12 +72,15 @@ export function FieldSettingsProvider({ children }: { children: ReactNode }) {
   }, [showCalendarMarks]);
 
   const setField = (k: BookingField, v: boolean) =>
-    setFields((prev) => ({ ...prev, [k]: v }));
+    setFieldsState((prev) => ({ ...prev, [k]: v }));
+  
+  const setFields = (f: Record<BookingField, boolean>) => setFieldsState(f);
+  
   const setShowCalendarMarks = (v: boolean) => setShowCalendarMarksState(v);
-  const resetFields = () => setFields(DEFAULT_FIELDS);
+  const resetFields = () => setFieldsState(DEFAULT_FIELDS);
 
   return (
-    <Ctx.Provider value={{ fields, setField, showCalendarMarks, setShowCalendarMarks, resetFields }}>
+    <Ctx.Provider value={{ fields, setField, setFields, showCalendarMarks, setShowCalendarMarks, resetFields }}>
       {children}
     </Ctx.Provider>
   );

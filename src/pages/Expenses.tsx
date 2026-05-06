@@ -133,24 +133,33 @@ function ExpenseForm({ expense, onClose }: { expense?: Expense; onClose: () => v
   const [voiceNotes, setVoiceNotes] = useState<MediaItem[]>(expense?.voiceNotes || []);
   const [media, setMedia] = useState<MediaItem[]>(expense?.media || []);
 
+  const { setLoading } = useApp();
+
   const save = async () => {
     if (!type) { toast.error("Type required"); return; }
-    const exp: Expense = {
-      id: expense?.id || crypto.randomUUID(),
-      date: new Date(date).toISOString(),
-      type,
-      bookingId: bookingId || undefined,
-      amount: amount === "" ? null : Number(amount),
-      description,
-      voiceNotes,
-      media,
-    };
-    await update((d) => ({
-      ...d,
-      expenses: expense ? d.expenses.map((e) => (e.id === expense.id ? exp : e)) : [exp, ...d.expenses],
-    }));
-    toast.success(t("saved"));
-    onClose();
+    setLoading(true, "Saving expense, please wait...");
+    try {
+      const exp: Expense = {
+        id: expense?.id || crypto.randomUUID(),
+        date: new Date(date).toISOString(),
+        type,
+        bookingId: bookingId || undefined,
+        amount: amount === "" ? null : Number(amount),
+        description,
+        voiceNotes,
+        media,
+      };
+      await update((d) => ({
+        ...d,
+        expenses: expense ? d.expenses.map((e) => (e.id === expense.id ? exp : e)) : [exp, ...d.expenses],
+      }));
+      toast.success(t("saved"));
+      onClose();
+    } catch (err) {
+      toast.error("Failed to save expense");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

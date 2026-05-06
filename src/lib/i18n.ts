@@ -5,7 +5,6 @@ export const translations = {
   dashboard: { en: "Dashboard", kn: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್" },
   bookings: { en: "Bookings", kn: "ಬುಕಿಂಗ್‌ಗಳು" },
   expenses: { en: "Expenses", kn: "ಖರ್ಚುಗಳು" },
-  gallery: { en: "Gallery", kn: "ಗ್ಯಾಲರಿ" },
   customerHistory: { en: "Customer History", kn: "ಗ್ರಾಹಕ ಇತಿಹಾಸ" },
   settings: { en: "Settings", kn: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು" },
 
@@ -52,10 +51,6 @@ export const translations = {
   linkBooking: { en: "Link to Booking (Optional)", kn: "ಬುಕಿಂಗ್‌ಗೆ ಲಿಂಕ್ (ಐಚ್ಛಿಕ)" },
   manageTypes: { en: "Manage Types", kn: "ಪ್ರಕಾರಗಳನ್ನು ನಿರ್ವಹಿಸಿ" },
   add: { en: "Add", kn: "ಸೇರಿಸಿ" },
-  album: { en: "Album", kn: "ಆಲ್ಬಮ್" },
-  albums: { en: "Albums", kn: "ಆಲ್ಬಮ್‌ಗಳು" },
-  createAlbum: { en: "Create Album", kn: "ಆಲ್ಬಮ್ ರಚಿಸಿ" },
-  rename: { en: "Rename", kn: "ಮರುಹೆಸರಿಸಿ" },
   upload: { en: "Upload", kn: "ಅಪ್‌ಲೋಡ್" },
   language: { en: "Language", kn: "ಭಾಷೆ" },
   english: { en: "English", kn: "English" },

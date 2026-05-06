@@ -4,18 +4,17 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AppProvider } from "@/lib/AppContext";
+import { AppProvider, useApp } from "@/lib/AppContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import { FieldSettingsProvider } from "@/lib/FieldSettingsContext";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import SplashScreen from "@/components/SplashScreen";
+import LoadingOverlay from "@/components/ui/LoadingOverlay";
 import AppLayout from "@/components/AppLayout";
 import Login from "./pages/Login";
-import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
 import Expenses from "./pages/Expenses";
-import Gallery from "./pages/Gallery";
 import Customers from "./pages/Customers";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound.tsx";
@@ -35,16 +34,16 @@ function HomeRedirect() {
     { perm: "module.dashboard", path: "/dashboard" },
     { perm: "module.bookings", path: "/bookings" },
     { perm: "module.expenses", path: "/expenses" },
-    { perm: "module.gallery", path: "/gallery" },
     { perm: "module.customers", path: "/customers" },
     { perm: "module.settings", path: "/settings" },
   ];
   const target = order.find((o) => has(o.perm));
-  return <Navigate to={target?.path || "/profile"} replace />;
+  return <Navigate to={target?.path || "/dashboard"} replace />;
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { user, isInitializing } = useAuth();
+  if (isInitializing) return null;
   if (!user) return <Login />;
   return (
     <BrowserRouter>
@@ -54,10 +53,8 @@ function AppRoutes() {
           <Route path="/dashboard" element={<Guard perm="module.dashboard"><Dashboard /></Guard>} />
           <Route path="/bookings" element={<Guard perm="module.bookings"><Bookings /></Guard>} />
           <Route path="/expenses" element={<Guard perm="module.expenses"><Expenses /></Guard>} />
-          <Route path="/gallery" element={<Guard perm="module.gallery"><Gallery /></Guard>} />
           <Route path="/customers" element={<Guard perm="module.customers"><Customers /></Guard>} />
           <Route path="/settings" element={<Guard perm="module.settings"><Settings /></Guard>} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AppLayout>
@@ -65,25 +62,34 @@ function AppRoutes() {
   );
 }
 
-const App = () => {
+const AppContent = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const { loading: globalLoading } = useApp();
+  
   useEffect(() => {
     const t = setTimeout(() => setShowSplash(false), 2200);
     return () => clearTimeout(t);
   }, []);
 
   return (
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      {showSplash && <SplashScreen />}
+      <LoadingOverlay show={globalLoading.show} message={globalLoading.message} />
+      <AppRoutes />
+    </TooltipProvider>
+  );
+};
+
+const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <ThemeProvider>
           <FieldSettingsProvider>
             <AuthProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                {showSplash && <SplashScreen />}
-                <AppRoutes />
-              </TooltipProvider>
+              <AppContent />
             </AuthProvider>
           </FieldSettingsProvider>
         </ThemeProvider>

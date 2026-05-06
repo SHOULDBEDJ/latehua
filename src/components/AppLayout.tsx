@@ -1,6 +1,6 @@
-import { Menu, X, LayoutDashboard, CalendarCheck, Wallet, Images, Users, Settings as SettingsIcon, User as UserIcon, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, CalendarCheck, Wallet, Users, Settings as SettingsIcon, User as UserIcon, LogOut, LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useApp } from "@/lib/AppContext";
 import { useAuth, PermKey } from "@/lib/AuthContext";
 import logo from "@/assets/logo.jpeg";
@@ -11,15 +11,13 @@ import { cn } from "@/lib/utils";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { t, lang, setLang } = useApp();
   const { user, logout, has } = useAuth();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { data } = useDB();
 
-  const allItems: { to: string; label: string; icon: any; perm: PermKey }[] = [
+  const allItems: { to: string; label: string; icon: LucideIcon; perm: PermKey }[] = [
     { to: "/dashboard", label: t("dashboard"), icon: LayoutDashboard, perm: "module.dashboard" },
     { to: "/bookings", label: t("bookings"), icon: CalendarCheck, perm: "module.bookings" },
     { to: "/expenses", label: t("expenses"), icon: Wallet, perm: "module.expenses" },
-    { to: "/gallery", label: t("gallery"), icon: Images, perm: "module.gallery" },
     { to: "/customers", label: t("customerHistory"), icon: Users, perm: "module.customers" },
     { to: "/settings", label: t("settings"), icon: SettingsIcon, perm: "module.settings" },
   ];
@@ -66,9 +64,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/profile")}
               className="text-primary-foreground hover:bg-primary-foreground/10"
-              aria-label="Profile"
+              aria-label="User"
               title={user?.username}
             >
               <UserIcon className="h-5 w-5" />
@@ -103,21 +100,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <span>{it.label}</span>
               </NavLink>
             ))}
-            <NavLink
-              to="/profile"
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition",
-                  isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
-                    : "hover:bg-sidebar-accent"
-                )
-              }
-            >
-              <UserIcon className="h-5 w-5" />
-              <span>Profile</span>
-            </NavLink>
           </nav>
           <div className="p-4 border-t border-sidebar-border">
             <div className="text-xs text-sidebar-foreground/70 mb-2 px-1 truncate">

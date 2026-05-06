@@ -30,10 +30,20 @@ export function useDB() {
   }, []);
 
   const update = useCallback(async (mutator: (d: AppData) => AppData) => {
-    const current = await ensureLoaded();
-    cached = mutator(current);
-    await saveData(cached);
+    // Optimistic update
+    const current = cached || await loadData();
+    const next = mutator({ ...current });
+    cached = next;
+    setData({ ...next });
     listeners.forEach((l) => l());
+
+    // Sync with backend in background
+    try {
+      await saveData(next);
+    } catch (err) {
+      console.error("Failed to sync data with backend:", err);
+      // Optional: you could refresh from server here to rollback on error
+    }
   }, []);
 
   const refresh = useCallback(async () => {

@@ -5,12 +5,15 @@ interface AppCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: TKey) => string;
+  loading: { show: boolean; message?: string };
+  setLoading: (show: boolean, message?: string) => void;
 }
 
 const Ctx = createContext<AppCtx | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem("lang") as Lang) || "en");
+  const [loading, setLoadingState] = useState<{ show: boolean; message?: string }>({ show: false });
 
   useEffect(() => {
     localStorage.setItem("lang", lang);
@@ -19,8 +22,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setLang = (l: Lang) => setLangState(l);
   const t = (key: TKey) => translate(key, lang);
+  const setLoading = (show: boolean, message?: string) => setLoadingState({ show, message });
 
-  return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ lang, setLang, t, loading, setLoading }}>{children}</Ctx.Provider>;
 }
 
 export function useApp() {

@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useDB } from "./useDB";
-import { User, PermKey } from "./db";
+export type { User, PermKey } from "./db";
 
 export const ALL_PERMS: { key: PermKey; label: string; group: string }[] = [
   { key: "module.dashboard", label: "Dashboard", group: "Modules" },
   { key: "module.bookings", label: "Bookings", group: "Modules" },
   { key: "module.expenses", label: "Expenses", group: "Modules" },
-  { key: "module.gallery", label: "Gallery", group: "Modules" },
   { key: "module.customers", label: "Customer History", group: "Modules" },
   { key: "module.settings", label: "Settings", group: "Modules" },
 
@@ -18,11 +17,6 @@ export const ALL_PERMS: { key: PermKey; label: string; group: string }[] = [
   { key: "expenses.create", label: "Create Expense", group: "Expenses" },
   { key: "expenses.edit", label: "Edit Expense", group: "Expenses" },
   { key: "expenses.delete", label: "Delete Expense", group: "Expenses" },
-
-  { key: "gallery.create", label: "Create Album", group: "Gallery" },
-  { key: "gallery.upload", label: "Upload Media", group: "Gallery" },
-  { key: "gallery.rename", label: "Rename Album", group: "Gallery" },
-  { key: "gallery.delete", label: "Delete Album/Media", group: "Gallery" },
 
   { key: "customers.edit", label: "Edit Customer", group: "Customers" },
   { key: "customers.delete", label: "Delete Customer", group: "Customers" },
@@ -51,6 +45,7 @@ const SESSION_KEY = "ssm-session";
 interface AuthCtx {
   user: User | null;
   users: User[];
+  isInitializing: boolean;
   login: (username: string, password: string) => { ok: boolean; error?: string };
   logout: () => void;
   has: (perm: PermKey) => boolean;
@@ -66,6 +61,7 @@ const Ctx = createContext<AuthCtx | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data, loading, update, refresh: dbRefresh } = useDB();
   const [user, setUser] = useState<User | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const users = data?.users || [];
   
@@ -78,15 +74,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Load session
   useEffect(() => {
-    if (!loading && users.length > 0) {
+    if (!loading && data) {
       const sid = localStorage.getItem(SESSION_KEY);
       if (sid) {
+        const users = data.users || [];
         const found = users.find(u => u.id === sid);
         if (found) setUser(found);
         else localStorage.removeItem(SESSION_KEY);
       }
+      setIsInitializing(false);
     }
-  }, [loading, users]);
+  }, [loading, data]);
 
   const login: AuthCtx["login"] = (username, password) => {
     const found = users.find((u) => u.username === username.trim() && u.password === password);
@@ -157,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refresh = () => dbRefresh();
 
   return (
-    <Ctx.Provider value={{ user, users, login, logout, has, addUser, updateUser, deleteUser, resetOwn, refresh }}>
+    <Ctx.Provider value={{ user, users, isInitializing, login, logout, has, addUser, updateUser, deleteUser, resetOwn, refresh }}>
       {children}
     </Ctx.Provider>
   );

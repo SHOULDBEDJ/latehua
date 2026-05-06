@@ -67,6 +67,8 @@ export function BookingForm({ booking, onClose }: Props) {
     setSearch("");
   };
 
+  const { setLoading } = useApp();
+
   const handleSave = async () => {
     if (!name.trim() || !phone.trim()) {
       toast.error("Name & phone required");
@@ -80,56 +82,63 @@ export function BookingForm({ booking, onClose }: Props) {
       toast.error("Total amount required");
       return;
     }
-    await update((d) => {
-      let cid = customerId;
-      let customers = d.customers;
-      let customerCounter = d.customerCounter;
-      if (!cid) {
-        const existing = customers.find((c) => c.phone === phone.trim());
-        if (existing) {
-          cid = existing.id;
+    setLoading(true, "Saving your booking, please wait...");
+    try {
+      await update((d) => {
+        let cid = customerId;
+        let customers = d.customers;
+        let customerCounter = d.customerCounter;
+        if (!cid) {
+          const existing = customers.find((c) => c.phone === phone.trim());
+          if (existing) {
+            cid = existing.id;
+          } else {
+            cid = nextCustomerId(customerCounter);
+            customerCounter += 1;
+            customers = [
+              ...customers,
+              { id: cid, name: name.trim(), phone: phone.trim(), place, createdAt: new Date().toISOString() },
+            ];
+          }
         } else {
-          cid = nextCustomerId(customerCounter);
-          customerCounter += 1;
-          customers = [
-            ...customers,
-            { id: cid, name: name.trim(), phone: phone.trim(), place, createdAt: new Date().toISOString() },
-          ];
+          customers = customers.map((c) =>
+            c.id === cid ? { ...c, name: name.trim(), phone: phone.trim(), place } : c
+          );
         }
-      } else {
-        customers = customers.map((c) =>
-          c.id === cid ? { ...c, name: name.trim(), phone: phone.trim(), place } : c
-        );
-      }
 
-      const newBooking: Booking = {
-        id: booking?.id || genBookingId(),
-        customerId: cid,
-        customerName: name.trim(),
-        customerPhone: phone.trim(),
-        place,
-        createdAt: booking?.createdAt || now.toISOString(),
-        deliveryDate: deliveryDate || undefined,
-        deliveryTime: deliveryTime || undefined,
-        returnDate: returnDate || undefined,
-        returnTime: returnTime || undefined,
-        functionType: functionType || undefined,
-        status,
-        paymentMode,
-        amount: amount === "" ? null : Number(amount),
-        paidAmount: paidAmount === "" ? null : Number(paidAmount),
-        voiceNotes,
-        billMedia,
-      };
+        const newBooking: Booking = {
+          id: booking?.id || genBookingId(),
+          customerId: cid,
+          customerName: name.trim(),
+          customerPhone: phone.trim(),
+          place,
+          createdAt: booking?.createdAt || now.toISOString(),
+          deliveryDate: deliveryDate || undefined,
+          deliveryTime: deliveryTime || undefined,
+          returnDate: returnDate || undefined,
+          returnTime: returnTime || undefined,
+          functionType: functionType || undefined,
+          status,
+          paymentMode,
+          amount: amount === "" ? null : Number(amount),
+          paidAmount: paidAmount === "" ? null : Number(paidAmount),
+          voiceNotes,
+          billMedia,
+        };
 
-      const bookings = booking
-        ? d.bookings.map((b) => (b.id === booking.id ? newBooking : b))
-        : [newBooking, ...d.bookings];
+        const bookings = booking
+          ? d.bookings.map((b) => (b.id === booking.id ? newBooking : b))
+          : [newBooking, ...d.bookings];
 
-      return { ...d, customers, customerCounter, bookings };
-    });
-    toast.success(t("saved"));
-    onClose();
+        return { ...d, customers, customerCounter, bookings };
+      });
+      toast.success(t("saved"));
+      onClose();
+    } catch (err) {
+      toast.error("Failed to save booking");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

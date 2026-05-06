@@ -55,6 +55,7 @@ export interface BusinessInfo {
   contact: string;
   altContact?: string;
   address?: string;
+  websiteUrl?: string;
 }
 
 export interface WATemplate {
@@ -64,10 +65,9 @@ export interface WATemplate {
 }
 
 export type PermKey =
-  | "module.dashboard" | "module.bookings" | "module.expenses" | "module.gallery" | "module.customers" | "module.settings"
+  | "module.dashboard" | "module.bookings" | "module.expenses" | "module.customers" | "module.settings"
   | "bookings.create" | "bookings.edit" | "bookings.delete" | "bookings.whatsapp"
   | "expenses.create" | "expenses.edit" | "expenses.delete"
-  | "gallery.create" | "gallery.upload" | "gallery.rename" | "gallery.delete"
   | "customers.edit" | "customers.delete"
   | "settings.manageUsers" | "settings.manageTypes" | "settings.theme" | "settings.fields" | "settings.calendar" | "settings.backup" | "settings.restore" | "settings.deleteAll";
 
@@ -80,18 +80,11 @@ export interface User {
   permissions: PermKey[];
 }
 
-export interface Album {
-  id: string;
-  name: string;
-  createdAt: string;
-  media: MediaItem[];
-}
 
 export interface AppData {
   customers: Customer[];
   bookings: Booking[];
   expenses: Expense[];
-  albums: Album[];
   functionTypes: string[];
   expenseTypes: string[];
   customerCounter: number;
@@ -106,7 +99,6 @@ const DEFAULT: AppData = {
   customers: [],
   bookings: [],
   expenses: [],
-  albums: [],
   functionTypes: ["Wedding", "Birthday", "Corporate", "Engagement", "Housewarming"],
   expenseTypes: ["Transport", "Labour", "Food", "Maintenance"],
   customerCounter: 0,

@@ -59,9 +59,15 @@ export default function Bookings() {
             <Card key={b.id} className="p-4 hover:shadow-elegant transition flex flex-col">
               <div className="flex justify-between items-start mb-2">
                 <span className="font-mono text-xs text-muted-foreground">{b.id}</span>
-                <div className="flex gap-1">
-                  <Badge variant="secondary" className="text-[10px]">{b.status}</Badge>
-                  <Badge variant={b.paymentMode === "Paid" ? "default" : "destructive"} className="text-[10px]">{b.paymentMode}</Badge>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] uppercase text-muted-foreground font-semibold">Booking:</span>
+                    <Badge variant="secondary" className="text-[10px] py-0">{b.status}</Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] uppercase text-muted-foreground font-semibold">Payment:</span>
+                    <Badge variant={b.paymentMode === "Paid" ? "default" : "destructive"} className="text-[10px] py-0">{b.paymentMode}</Badge>
+                  </div>
                 </div>
               </div>
               <p className="font-semibold">{b.customerName}</p>

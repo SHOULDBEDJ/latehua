@@ -4,7 +4,7 @@ import { useApp } from "@/lib/AppContext";
 import { useFieldSettings } from "@/lib/FieldSettingsContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRight } from "lucide-react";
+import { Plus, ArrowRight, Globe, ExternalLink } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookingForm } from "@/components/BookingForm";
 import { BookingDetail } from "@/components/BookingDetail";
@@ -106,6 +106,28 @@ export default function Dashboard() {
           <Plus className="h-4 w-4 mr-1" /> {t("newBooking")}
         </Button>
       </div>
+
+      {data.business.websiteUrl && (
+        <Card className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 border-none shadow-sm flex items-center justify-between group hover:shadow-elegant transition-all duration-300">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/20 rounded-full text-primary group-hover:scale-110 transition-transform">
+              <Globe className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm">Your Business Website</p>
+              <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-md">{data.business.websiteUrl}</p>
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => window.open(data.business.websiteUrl, "_blank")}
+          >
+            <ExternalLink className="h-4 w-4 mr-1" /> Open Site
+          </Button>
+        </Card>
+      )}
 
       {/* KPI */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -216,7 +238,7 @@ export default function Dashboard() {
                   <div>
                     <p className="font-mono text-xs text-muted-foreground">{b.id}</p>
                     <p className="font-medium">{b.customerName}</p>
-                    <p className="text-xs">{b.deliveryDate || "—"} · {b.status}</p>
+                    <p className="text-xs">{b.deliveryDate || "—"} · <span className="text-[10px] uppercase font-bold text-muted-foreground opacity-70">Status:</span> {b.status}</p>
                   </div>
                   <span className="text-sm font-semibold">₹{b.amount ?? "—"}</span>
                 </button>

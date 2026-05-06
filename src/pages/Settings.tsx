@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDB } from "@/lib/useDB";
 import { useApp } from "@/lib/AppContext";
 import { useAuth } from "@/lib/AuthContext";
@@ -6,10 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, Download, Upload, Trash2, Palette, RotateCcw, MessageSquare, Plus, Pencil } from "lucide-react";
+import { X, Download, Upload, Trash2, Palette, RotateCcw, MessageSquare, Plus, Pencil, Globe } from "lucide-react";
 import { exportAll, importAll, deleteAll } from "@/lib/db";
 import { useTheme, PRESET_COLORS } from "@/lib/ThemeContext";
-import { useFieldSettings, BOOKING_FIELDS } from "@/lib/FieldSettingsContext";
+import { useFieldSettings } from "@/lib/FieldSettingsContext";
 import { Switch } from "@/components/ui/switch";
 import { UserManagement } from "@/components/UserManagement";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ export default function Settings() {
   const { t, lang, setLang } = useApp();
   const { has } = useAuth();
   const { color, setColor, reset: resetColor } = useTheme();
-  const { fields, setField, showCalendarMarks, setShowCalendarMarks, resetFields } = useFieldSettings();
+  const { showCalendarMarks, setShowCalendarMarks } = useFieldSettings();
   const [newType, setNewType] = useState("");
   const [confirmDel, setConfirmDel] = useState("");
   const [editingTpl, setEditingTpl] = useState<WATemplate | null>(null);
@@ -101,15 +101,95 @@ export default function Settings() {
     setShowTplDialog(true);
   };
 
+  // Language local state
+  const [localLang, setLocalLang] = useState(lang);
+  useEffect(() => { setLocalLang(lang); }, [lang]);
+  const saveLang = () => {
+    setLang(localLang);
+    toast.success("Language saved");
+  };
+
+  // Theme local state
+  const [localColor, setLocalColor] = useState(color);
+  useEffect(() => { setLocalColor(color); }, [color]);
+  const saveTheme = () => {
+    setColor(localColor);
+    toast.success("Theme saved");
+  };
+
+
+  // Calendar local state
+  const [localCalMarks, setLocalCalMarks] = useState(showCalendarMarks);
+  useEffect(() => { setLocalCalMarks(showCalendarMarks); }, [showCalendarMarks]);
+
+  const saveCal = () => {
+    setShowCalendarMarks(localCalMarks);
+    toast.success("Calendar settings saved");
+  };
+
+  const [bizForm, setBizForm] = useState({ 
+    name: data.business.name, 
+    url: data.business.websiteUrl || "" 
+  });
+
+  useEffect(() => {
+    setBizForm({
+      name: data.business.name,
+      url: data.business.websiteUrl || ""
+    });
+  }, [data.business]);
+
+  const saveBiz = async () => {
+    await update((d) => ({ 
+      ...d, 
+      business: { ...d.business, name: bizForm.name, websiteUrl: bizForm.url } 
+    }));
+    toast.success("Business details saved");
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-10">
       <h2 className="text-2xl font-bold">{t("settings")}</h2>
 
       <Card className="p-4 space-y-3">
-        <h3 className="font-semibold">{t("language")}</h3>
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold">{t("language")}</h3>
+          <Button size="sm" onClick={saveLang} className="bg-gradient-primary">
+            Save
+          </Button>
+        </div>
         <div className="flex gap-2">
-          <Button variant={lang === "en" ? "default" : "outline"} onClick={() => setLang("en")}>English</Button>
-          <Button variant={lang === "kn" ? "default" : "outline"} onClick={() => setLang("kn")}>ಕನ್ನಡ</Button>
+          <Button variant={localLang === "en" ? "default" : "outline"} onClick={() => setLocalLang("en")}>English</Button>
+          <Button variant={localLang === "kn" ? "default" : "outline"} onClick={() => setLocalLang("kn")}>ಕನ್ನಡ</Button>
+        </div>
+      </Card>
+
+      <Card className="p-4 space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" /> Business Details
+          </h3>
+          <Button size="sm" onClick={saveBiz} className="bg-gradient-primary">
+            Save
+          </Button>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="business-name">Business Name</Label>
+          <Input 
+            id="business-name"
+            value={bizForm.name} 
+            onChange={(e) => setBizForm(prev => ({ ...prev, name: e.target.value }))} 
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="business-url">Website URL</Label>
+          <Input 
+            id="business-url"
+            value={bizForm.url} 
+            onChange={(e) => setBizForm(prev => ({ ...prev, url: e.target.value }))} 
+            placeholder="https://your-website.com"
+          />
+          <p className="text-[10px] text-muted-foreground">This link will appear on the Dashboard for quick access.</p>
         </div>
       </Card>
 
@@ -117,7 +197,12 @@ export default function Settings() {
 
       {has("settings.theme") && (
       <Card className="p-4 space-y-4">
-        <h3 className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4" /> Colour Theme</h3>
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4" /> Colour Theme</h3>
+          <Button size="sm" onClick={saveTheme} className="bg-gradient-primary">
+            Save
+          </Button>
+        </div>
         <div>
           <Label className="text-sm text-muted-foreground">Preset Colours</Label>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -125,10 +210,10 @@ export default function Settings() {
               <button
                 key={p.hex}
                 type="button"
-                onClick={() => setColor(p.hex)}
+                onClick={() => setLocalColor(p.hex)}
                 title={p.name}
                 className={`h-10 w-10 rounded-full border-2 transition-transform hover:scale-110 ${
-                  color.toLowerCase() === p.hex.toLowerCase() ? "border-foreground ring-2 ring-offset-2 ring-primary" : "border-border"
+                  localColor.toLowerCase() === p.hex.toLowerCase() ? "border-foreground ring-2 ring-offset-2 ring-primary" : "border-border"
                 }`}
                 style={{ backgroundColor: p.hex }}
                 aria-label={p.name}
@@ -141,21 +226,20 @@ export default function Settings() {
           <div className="flex items-center gap-3">
             <input
               type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
+              value={localColor}
+              onChange={(e) => setLocalColor(e.target.value)}
               className="h-10 w-16 rounded cursor-pointer border border-border bg-transparent"
             />
             <Input
-              value={color}
+              value={localColor}
               onChange={(e) => {
                 const v = e.target.value;
-                if (/^#[0-9a-fA-F]{6}$/.test(v)) setColor(v);
-                else setColor(v);
+                setLocalColor(v);
               }}
               className="max-w-[140px] font-mono uppercase"
               maxLength={7}
             />
-            <Button variant="outline" size="sm" onClick={resetColor}>
+            <Button variant="outline" size="sm" onClick={() => { setLocalColor("#5B2A86"); setColor("#5B2A86"); }}>
               <RotateCcw className="h-4 w-4 mr-1" /> Reset
             </Button>
           </div>
@@ -163,39 +247,21 @@ export default function Settings() {
       </Card>
       )}
 
-      {has("settings.fields") && (
-      <Card className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Booking Form Fields</h3>
-          <Button variant="ghost" size="sm" onClick={resetFields}>
-            <RotateCcw className="h-4 w-4 mr-1" /> Reset
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">Toggle which fields appear in the booking form.</p>
-        <div className="divide-y">
-          {BOOKING_FIELDS.map((f) => (
-            <div key={f.key} className="flex items-center justify-between py-2">
-              <Label htmlFor={`field-${f.key}`} className="cursor-pointer">{f.label}</Label>
-              <Switch
-                id={`field-${f.key}`}
-                checked={fields[f.key]}
-                onCheckedChange={(v) => setField(f.key, v)}
-              />
-            </div>
-          ))}
-        </div>
-      </Card>
-      )}
 
       {has("settings.calendar") && (
       <Card className="p-4 space-y-3">
-        <h3 className="font-semibold">Calendar Settings</h3>
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold">Calendar Settings</h3>
+          <Button size="sm" onClick={saveCal} className="bg-gradient-primary">
+            Save
+          </Button>
+        </div>
         <div className="flex items-center justify-between">
           <Label htmlFor="cal-marks" className="cursor-pointer">Show booking marks on calendar dates</Label>
           <Switch
             id="cal-marks"
-            checked={showCalendarMarks}
-            onCheckedChange={setShowCalendarMarks}
+            checked={localCalMarks}
+            onCheckedChange={setLocalCalMarks}
           />
         </div>
       </Card>
@@ -261,7 +327,15 @@ export default function Settings() {
 
       {has("settings.manageTypes") && (
       <Card className="p-4 space-y-3">
-        <h3 className="font-semibold">{t("functionTypes")}</h3>
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold">{t("functionTypes")}</h3>
+          <Button size="sm" variant="default" onClick={async () => {
+            await update((d) => ({ ...d, functionTypes: data.functionTypes }));
+            toast.success("Function types saved");
+          }} className="bg-gradient-primary">
+            Save All
+          </Button>
+        </div>
         <div className="flex gap-2">
           <Input value={newType} onChange={(e) => setNewType(e.target.value)} placeholder={t("add")} />
           <Button onClick={addType}>{t("add")}</Button>
