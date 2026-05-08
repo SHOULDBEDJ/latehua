@@ -9,20 +9,21 @@ import { Label } from "@/components/ui/label";
 import { X, Download, Upload, Trash2, Palette, RotateCcw, MessageSquare, Plus, Pencil, Globe } from "lucide-react";
 import { exportAll, importAll, deleteAll } from "@/lib/db";
 import { useTheme, PRESET_COLORS } from "@/lib/ThemeContext";
-import { useFieldSettings } from "@/lib/FieldSettingsContext";
+import { useFieldSettings, BOOKING_FIELDS, BookingField } from "@/lib/FieldSettingsContext";
 import { Switch } from "@/components/ui/switch";
 import { UserManagement } from "@/components/UserManagement";
 import { toast } from "sonner";
 import { WATemplate } from "@/lib/db";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Layout } from "lucide-react";
 
 export default function Settings() {
   const { data, loading, update, refresh } = useDB();
   const { t, lang, setLang } = useApp();
   const { has } = useAuth();
   const { color, setColor, reset: resetColor } = useTheme();
-  const { showCalendarMarks, setShowCalendarMarks } = useFieldSettings();
+  const { showCalendarMarks, setShowCalendarMarks, fields, setFields } = useFieldSettings();
   const [newType, setNewType] = useState("");
   const [confirmDel, setConfirmDel] = useState("");
   const [editingTpl, setEditingTpl] = useState<WATemplate | null>(null);
@@ -125,6 +126,21 @@ export default function Settings() {
   const saveCal = () => {
     setShowCalendarMarks(localCalMarks);
     toast.success("Calendar settings saved");
+  };
+
+  // Fields local state
+  const [localFields, setLocalFields] = useState<Record<BookingField, boolean>>(fields);
+  useEffect(() => { setLocalFields(fields); }, [fields]);
+
+  const saveFields = () => {
+    setFields(localFields);
+    toast.success("Booking form fields updated");
+  };
+
+  const toggleAllFields = (val: boolean) => {
+    const next = { ...localFields };
+    BOOKING_FIELDS.forEach(f => { next[f.key] = val; });
+    setLocalFields(next);
   };
 
   const [bizForm, setBizForm] = useState({ 
@@ -266,6 +282,34 @@ export default function Settings() {
         </div>
       </Card>
       )}
+
+      <Card className="p-4 space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold flex items-center gap-2">
+            <Layout className="h-4 w-4 text-primary" /> Booking Form Fields
+          </h3>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => toggleAllFields(true)}>Enable All</Button>
+            <Button size="sm" variant="outline" onClick={() => toggleAllFields(false)}>Disable All</Button>
+            <Button size="sm" onClick={saveFields} className="bg-gradient-primary">
+              Save
+            </Button>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">Select which fields should be visible in the New Booking form.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+          {BOOKING_FIELDS.map((f) => (
+            <div key={f.key} className="flex items-center justify-between border-b border-border/50 pb-2">
+              <Label htmlFor={`field-${f.key}`} className="cursor-pointer text-sm">{f.label}</Label>
+              <Switch
+                id={`field-${f.key}`}
+                checked={localFields[f.key]}
+                onCheckedChange={(val) => setLocalFields(prev => ({ ...prev, [f.key]: val }))}
+              />
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <Card className="p-4 space-y-3">
         <div className="flex justify-between items-center">
